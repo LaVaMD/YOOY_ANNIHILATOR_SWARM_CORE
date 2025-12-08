@@ -2,11 +2,29 @@ const body = document.body;
 
 const toggle = document.querySelector('.mobile-toggle');
 const nav = document.querySelector('nav');
+const header = document.querySelector('header');
 if (toggle && nav) {
   toggle.addEventListener('click', () => {
     nav.classList.toggle('show');
   });
 }
+
+const updateHeader = () => {
+  if (!header) return;
+  const isHome = body.dataset.page === 'home';
+  if (!isHome) {
+    header.classList.add('scrolled');
+    return;
+  }
+  if (window.scrollY > 12) {
+    header.classList.add('scrolled');
+  } else {
+    header.classList.remove('scrolled');
+  }
+};
+
+updateHeader();
+window.addEventListener('scroll', updateHeader);
 
 const setActiveNav = () => {
   const page = body.dataset.page;
