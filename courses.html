@@ -1,0 +1,203 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Waviboy AI Studio Academy | Courses</title>
+  <link rel="stylesheet" href="assets/style.css" />
+</head>
+<body data-page="courses">
+  <header>
+    <div class="navbar container">
+      <a class="brand" href="index.html">Waviboy AI Studio Academy</a>
+      <button class="mobile-toggle" aria-label="Toggle navigation">☰</button>
+      <nav>
+        <a href="index.html" data-page="home">Home</a>
+        <a href="courses.html" data-page="courses">Courses</a>
+        <a href="about.html" data-page="about">About us</a>
+        <a href="blog.html" data-page="blog">Blog</a>
+      </nav>
+      <div class="nav-actions">
+        <a class="button button-outline" data-open-modal="login-modal">Sign In</a>
+        <a class="button button-primary" data-open-modal="signup-modal">Sign Up</a>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <section class="section hero" style="min-height:auto; padding:60px 0;">
+      <div class="container">
+        <div class="badge">Course catalog</div>
+        <h1>Courses that help you level up</h1>
+        <p class="section-subtitle">Choose from our curated programs and enroll to unlock all modules and community perks.</p>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="container">
+        <div class="courses-grid">
+          <div class="course-card">
+            <h3>Waviboy AI Studio Academy</h3>
+            <p>Our flagship program combining AI, design thinking, and hands-on projects to launch your creative career.</p>
+            <div class="price"><span class="old">$997</span><strong>$797</strong></div>
+            <ul class="list">
+              <li>12 modules with 200+ hours of video</li>
+              <li>Portfolio-ready capstone project</li>
+              <li>Weekly live Q&A with mentors</li>
+            </ul>
+            <div class="hero-buttons">
+              <a class="button button-primary" data-open-modal="signup-modal">Enroll</a>
+              <a class="button button-outline" href="#">More details</a>
+            </div>
+          </div>
+
+          <div class="course-card">
+            <h3>Design Foundations</h3>
+            <p>Master the fundamentals of graphic and product design with practical exercises and feedback.</p>
+            <div class="price"><span class="old">$499</span><strong>$349</strong></div>
+            <ul class="list">
+              <li>Structured beginner-friendly pathway</li>
+              <li>Assignments reviewed by instructors</li>
+              <li>Resource library and templates</li>
+            </ul>
+            <div class="hero-buttons">
+              <a class="button button-primary" data-open-modal="signup-modal">Enroll</a>
+              <a class="button button-outline" href="#">More details</a>
+            </div>
+          </div>
+
+          <div class="course-card">
+            <h3>Web &amp; Product UI</h3>
+            <p>Learn modern UI design, prototyping, and developer handoff with real-world case studies.</p>
+            <div class="price"><span class="old">$599</span><strong>$429</strong></div>
+            <ul class="list">
+              <li>Interactive Figma workshops</li>
+              <li>Design systems and accessibility</li>
+              <li>Community design critiques</li>
+            </ul>
+            <div class="hero-buttons">
+              <a class="button button-primary" data-open-modal="signup-modal">Enroll</a>
+              <a class="button button-outline" href="#">More details</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <div class="overlay">
+    <div class="modal hidden" id="login-modal" role="dialog" aria-modal="true">
+      <button class="close" data-close-modal>&times;</button>
+      <h3>Sign In</h3>
+      <p>Login or sign up to start learning.</p>
+      <form id="login-form">
+        <input type="email" name="email" placeholder="Email" required />
+        <input type="password" name="password" placeholder="Password" required />
+        <div class="form-row" style="justify-content: space-between; align-items:center;">
+          <label class="checkbox-row">
+            <input type="checkbox" name="remember" />
+            <span>Keep me signed in</span>
+          </label>
+          <a href="#" data-open-modal="forgot-modal">Forgot your password?</a>
+        </div>
+        <button class="button button-primary" type="submit">Login</button>
+        <p class="section-subtitle">Create a new account for free? <a href="#" data-open-modal="signup-modal">Sign Up</a></p>
+        <div class="alert"></div>
+      </form>
+    </div>
+
+    <div class="modal hidden" id="signup-modal" role="dialog" aria-modal="true">
+      <button class="close" data-close-modal>&times;</button>
+      <h3>Create your account</h3>
+      <p>Start your learning journey with our community.</p>
+      <form id="signup-form">
+        <div class="form-grid">
+          <input type="text" name="firstName" placeholder="First name*" required />
+          <input type="text" name="lastName" placeholder="Last name*" required />
+          <input type="email" name="email" placeholder="Email*" required />
+          <input type="password" name="password" placeholder="Password*" required />
+          <input type="tel" name="phone" placeholder="Phone number" />
+          <input type="text" name="address" placeholder="Address" />
+          <select name="country">
+            <option value="">Country</option>
+            <option>United States</option>
+            <option>United Kingdom</option>
+            <option>Canada</option>
+            <option>Germany</option>
+            <option>Australia</option>
+          </select>
+          <select name="companySize">
+            <option value="">Company size</option>
+            <option>1-10</option>
+            <option>11-25</option>
+            <option>26-50</option>
+            <option>51-200</option>
+            <option>200+</option>
+          </select>
+          <select name="profession">
+            <option value="">Profession</option>
+            <option>Designer</option>
+            <option>Engineer</option>
+            <option>Product Manager</option>
+            <option>Student</option>
+            <option>Other</option>
+          </select>
+          <input type="url" name="website" placeholder="Website" />
+          <input type="text" name="university" placeholder="University" />
+          <input type="text" name="graduation" placeholder="Graduation year" />
+        </div>
+        <label class="checkbox-row">
+          <input type="checkbox" name="terms" />
+          <span>I accept the <a href="terms.html">Terms &amp; Conditions</a>*</span>
+        </label>
+        <label class="checkbox-row">
+          <input type="checkbox" name="newsletter" />
+          <span>I would like to receive news, tips and promotional material</span>
+        </label>
+        <button class="button button-primary" type="submit">Start your learning journey</button>
+        <p class="section-subtitle">Already have an account? <a href="#" data-open-modal="login-modal">Sign in</a></p>
+        <div class="alert"></div>
+      </form>
+    </div>
+
+    <div class="modal hidden" id="forgot-modal" role="dialog" aria-modal="true">
+      <button class="close" data-close-modal>&times;</button>
+      <h3>Reset your password</h3>
+      <p>Enter your email to receive a reset link.</p>
+      <form id="forgot-form">
+        <input type="email" name="email" placeholder="Email" required />
+        <button class="button button-primary" type="submit">Send reset link</button>
+        <div class="alert"></div>
+      </form>
+    </div>
+  </div>
+
+  <footer>
+    <div class="container footer-top">
+      <div class="footer-col">
+        <h4>Featured links</h4>
+        <div class="footer-links">
+          <a href="index.html">Home</a>
+          <a href="courses.html">Courses</a>
+          <a href="about.html">About us</a>
+          <a href="blog.html">Blog</a>
+          <a href="terms.html">Terms &amp; Conditions</a>
+          <a href="cookie-policy.html">Cookie Policy</a>
+        </div>
+      </div>
+      <div class="footer-col">
+        <h4>Connect with us</h4>
+        <div class="social">
+          <a href="#" aria-label="Instagram">IG</a>
+          <a href="#" aria-label="TikTok">TT</a>
+          <a href="#" aria-label="YouTube">YT</a>
+          <a href="#" aria-label="Twitter">X</a>
+        </div>
+      </div>
+    </div>
+    <div class="footer-bottom">© 2025 Waviboy AI Studio Academy. All rights reserved.</div>
+  </footer>
+
+  <script src="assets/script.js"></script>
+</body>
+</html>
