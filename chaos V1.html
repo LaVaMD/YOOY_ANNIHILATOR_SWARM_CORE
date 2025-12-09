@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YOOY_ANNIHILATOR_SWARM_CORE_vΩ</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.7.7/dat.gui.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@100;400;800&display=swap');
+
+        body, html {
+            margin: 0;
+            padding: 0;
+            background-color: #050505;
+            overflow: hidden;
+            font-family: 'JetBrains Mono', monospace;
+            color: #ff0055;
+        }
+
+        #canvas-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: 1;
+        }
+
+        #ui-layer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 10;
+            pointer-events: none;
+            mix-blend-mode: exclusion;
+        }
+
+        .hud-text {
+            position: absolute;
+            color: #00ff99;
+            text-shadow: 0 0 5px #00ff99;
+            font-size: 12px;
+            opacity: 0.8;
+        }
+
+        .top-left { top: 20px; left: 20px; }
+        .top-right { top: 20px; right: 20px; text-align: right; }
+        .bottom-left { bottom: 20px; left: 20px; }
+
+        .glitch-text {
+            font-weight: 800;
+            animation: glitch-anim 0.3s infinite;
+        }
+
+        #control-panel {
+            position: absolute;
+            bottom: 40px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 20;
+            pointer-events: auto;
+            background: rgba(0, 0, 0, 0.8);
+            border: 1px solid #ff0055;
+            padding: 20px;
+            border-radius: 4px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            box-shadow: 0 0 20px rgba(255, 0, 85, 0.2);
+        }
+
+        input[type=range] {
+            width: 300px;
+            accent-color: #ff0055;
+        }
+
+        .stage-label {
+            margin-top: 10px;
+            font-size: 14px;
+            color: #fff;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        #overlay-grain {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.1'/%3E%3C/svg%3E");
+            opacity: 0.15;
+            z-index: 5;
+            pointer-events: none;
+        }
+
+        .floating-word {
+            position: absolute;
+            font-size: 2rem;
+            font-weight: bold;
+            color: white;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+
+        @keyframes glitch-anim {
+            0% { transform: translate(0) }
+            20% { transform: translate(-2px, 2px) }
+            40% { transform: translate(-2px, -2px) }
+            60% { transform: translate(2px, 2px) }
+            80% { transform: translate(2px, -2px) }
+            100% { transform: translate(0) }
+        }
+
+        /* Scanlines */
+        .scanlines {
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: 100vw;
+            height: 100vh;
+            pointer-events: none;
+            background: linear-gradient(to bottom, rgba(255,255,255,0), rgba(255,255,255,0) 50%, rgba(0,0,0,0.2) 50%, rgba(0,0,0,0.2));
+            background-size: 100% 4px;
+            z-index: 15;
+            opacity: 0.3;
+        }
+    </style>
+</head>
+<body>
+
+<div id="canvas-container"></div>
+<div id="overlay-grain"></div>
+<div class="scanlines"></div>
+
+<div id="ui-layer">
+    <div class="hud-text top-left">
+        ID: "YAS_META_TRENDS_vΩ"<br>
+        MODE: REALITY_FILTER<br>
+        HOST: DETECTED
+    </div>
+    <div class="hud-text top-right">
+        KERNEL: RUNNING<br>
+        DRAMATURGY: <span id="drama-mode">JO (INTRODUCTION)</span><br>
+        <span class="glitch-text" id="status-text">SYSTEM_NORMAL</span>
+    </div>
+    <div class="hud-text bottom-left" style="bottom: 100px;">
+        > INJECTING_BRAINROT_PACKETS...<br>
+        > YOOY_SWARM_READY
+    </div>
+</div>
+
+<div id="control-panel">
+    <label for="stage-slider" style="color:#ff0055; margin-bottom:5px;">/// SWARM_INJECTION_LEVEL ///</label>
+    <input type="range" id="stage-slider" min="1" max="5" value="1" step="0.1">
+    <div class="stage-label" id="stage-display">S1: JO (CALM)</div>
+</div>
+
+<script>
+    // --- CONFIG & STATE ---
+    const config = {
+        stage: 1,
+        swarmCount: 100,
+        swarmSpeed: 0.02,
+        dispersion: 5,
+        chaos: 0,
+        pulseSpeed: 0.01,
+        cameraShake: 0
+    };
+
+    const phrases = ["YOOY", "CRACK", "PUNK", "NINJA", "BRAINROT", "NO_WORLD", "MÖÖW", "???"];
+
+    // --- THREE.JS SETUP ---
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color(0x050505);
+    scene.fog = new THREE.FogExp2(0x050505, 0.02);
+
+    const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+    camera.position.z = 8;
+    const initialCameraZ = 8;
+
+    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setPixelRatio(window.devicePixelRatio);
+    document.getElementById('canvas-container').appendChild(renderer.domElement);
+
+    // --- LIGHTING ---
+    const ambientLight = new THREE.AmbientLight(0x404040, 2);
+    scene.add(ambientLight);
+
+    const pointLight1 = new THREE.PointLight(0xff0055, 2, 50);
+    pointLight1.position.set(5, 5, 5);
+    scene.add(pointLight1);
+
+    const pointLight2 = new THREE.PointLight(0x00ff99, 2, 50);
+    pointLight2.position.set(-5, -5, 5);
+    scene.add(pointLight2);
+
+    // --- THE HOST (CHROME SPHERE) ---
+    const cubeRenderTarget = new THREE.WebGLCubeRenderTarget(256, {
+        format: THREE.RGBFormat,
+        generateMipmaps: true,
+        minFilter: THREE.LinearMipmapLinearFilter
+    });
+    const cubeCamera = new THREE.CubeCamera(0.1, 100, cubeRenderTarget);
+    scene.add(cubeCamera);
+
+    const hostGeometry = new THREE.IcosahedronGeometry(2, 4);
+    const hostMaterial = new THREE.MeshPhysicalMaterial({
+        color: 0x111111,
+        metalness: 1.0,
+        roughness: 0.0,
+        envMap: cubeRenderTarget.texture,
+        clearcoat: 1.0,
+        clearcoatRoughness: 0.1
+    });
+    const hostMesh = new THREE.Mesh(hostGeometry, hostMaterial);
+    scene.add(hostMesh);
+
+    // --- THE SWARM (YooYlings) ---
+    const particleCount = 1000;
+    const dummy = new THREE.Object3D();
+
+    // Shape: Spiky tetrahedron (Ninja Star / Spike)
+    const swarmGeometry = new THREE.TetrahedronGeometry(0.15, 0);
+    const swarmMaterial = new THREE.MeshPhongMaterial({
+        color: 0xff0055,
+        shininess: 100,
+        emissive: 0x220011
+    });
+
+    const swarmMesh = new THREE.InstancedMesh(swarmGeometry, swarmMaterial, particleCount);
+    scene.add(swarmMesh);
+
+    // Particle Data
+    const particles = [];
+    for (let i = 0; i < particleCount; i++) {
+        particles.push({
+            x: (Math.random() - 0.5) * 15,
+            y: (Math.random() - 0.5) * 15,
+            z: (Math.random() - 0.5) * 15,
+            vx: (Math.random() - 0.5) * 0.01,
+            vy: (Math.random() - 0.5) * 0.01,
+            vz: (Math.random() - 0.5) * 0.01,
+            phase: Math.random() * Math.PI * 2,
+            orbitRadius: 4 + Math.random() * 2,
+            orbitSpeed: 0.005 + Math.random() * 0.01
+        });
+    }
+
+    // --- FLOATING TEXT DOM ELEMENTS ---
+    const textContainer = document.getElementById('ui-layer');
+
+    function spawnText() {
+        // Text frequency scales with chaos
+        const chance = 0.98 - (config.chaos * 0.05);
+        if (Math.random() > chance && config.stage > 1.5) {
+            const el = document.createElement('div');
+            el.classList.add('floating-word');
+            el.innerText = phrases[Math.floor(Math.random() * phrases.length)];
+
+            const x = Math.random() * window.innerWidth;
+            const y = Math.random() * window.innerHeight;
+
+            el.style.left = `${x}px`;
+            el.style.top = `${y}px`;
+            el.style.color = Math.random() > 0.5 ? '#ff0055' : '#00ff99';
+            el.style.transform = `rotate(${Math.random() * 30 - 15}deg) scale(${0.5 + Math.random()})`;
+            el.style.opacity = '1';
+
+            textContainer.appendChild(el);
+
+            setTimeout(() => {
+                el.style.opacity = '0';
+                setTimeout(() => el.remove(), 500);
+            }, 800 / (config.stage * 0.5));
+        }
+    }
+
+    // --- STAGE MANAGEMENT (5-STEP DRAMATURGY) ---
+    const slider = document.getElementById('stage-slider');
+    const display = document.getElementById('stage-display');
+    const statusText = document.getElementById('status-text');
+    const dramaMode = document.getElementById('drama-mode');
+
+    slider.addEventListener('input', (e) => {
+        config.stage = parseFloat(e.target.value);
+        updateStageVisuals();
+    });
+
+    function updateStageVisuals() {
+        const s = config.stage;
+
+        // JO (序) - BEGINNING / CALM
+        if (s < 2) {
+            display.innerText = "S1: JO (CALM)";
+            dramaMode.innerText = "JO (序) - INTRODUCTION";
+            statusText.innerText = "HOST_INTACT";
+            statusText.style.color = "#00ff99";
+
+            config.chaos = 0.0;
+            config.swarmSpeed = 0.005; // Very slow, hypnotic
+            config.cameraShake = 0.0;
+            hostMaterial.wireframe = false;
+            hostMaterial.color.setHex(0x111111);
+        }
+        // HA (破) - BREAK / DEVELOPMENT
+        else if (s < 3) {
+            display.innerText = "S2: HA (RHYTHM)";
+            dramaMode.innerText = "HA (破) - DEVELOPMENT";
+            statusText.innerText = "PULSE_DETECTED";
+            statusText.style.color = "#ffff00";
+
+            config.chaos = 0.2;
+            config.swarmSpeed = 0.03; // Faster, purposeful
+            config.cameraShake = 0.02; // Subtle heartbeat shake
+        }
+        // TEN (転) - TWIST / CHAOS
+        else if (s < 4) {
+            display.innerText = "S3: TEN (TWIST)";
+            dramaMode.innerText = "TEN (転) - CHAOS/TWIST";
+            statusText.innerText = "REALITY_FRACTURE";
+            statusText.style.color = "#ff8800";
+
+            config.chaos = 0.8; // High noise
+            config.swarmSpeed = 0.08; // Erratic speed
+            config.cameraShake = 0.1; // Noticeable glitch shake
+            hostMaterial.wireframe = Math.random() > 0.5;
+        }
+        // KYU (急) - RAPID / CLIMAX
+        else if (s < 4.8) {
+            display.innerText = "S4: KYU (FRENZY)";
+            dramaMode.innerText = "KYU (急) - CLIMAX";
+            statusText.innerText = "BRAINROT_OVERLOAD";
+            statusText.style.color = "#ff0055";
+
+            config.chaos = 2.5; // Extreme chaos
+            config.swarmSpeed = 0.2; // Blazing fast
+            config.cameraShake = 0.3; // Violent shake
+            hostMaterial.color.setHex(0xffffff); // Flashing
+        }
+        // ZANSHIN (残心) - CONCLUSION / LINGERING SPIRIT
+        else {
+            display.innerText = "S5: ZANSHIN (EYE)";
+            dramaMode.innerText = "ZANSHIN (残心) - PRESENCE";
+            statusText.innerText = "ANNIHILATION_COMPLETE";
+            statusText.style.color = "#ff0000";
+
+            config.chaos = 0.1; // Order returns, but changed
+            config.swarmSpeed = 0.01; // Heavy, slow rotation
+            config.cameraShake = 0.05; // Low frequency rumble
+            hostMaterial.wireframe = true;
+            hostMaterial.color.setHex(0x000000);
+        }
+    }
+
+    // --- ANIMATION LOOP ---
+    let time = 0;
+
+    function animate() {
+        requestAnimationFrame(animate);
+        time += 0.01;
+
+        spawnText();
+
+        // Camera Shake Logic
+        let shakeX = 0, shakeY = 0, shakeZ = 0;
+        if (config.cameraShake > 0) {
+            shakeX = (Math.random() - 0.5) * config.cameraShake;
+            shakeY = (Math.random() - 0.5) * config.cameraShake;
+            shakeZ = (Math.random() - 0.5) * config.cameraShake;
+        }
+
+        // Swarm Logic
+        for (let i = 0; i < particleCount; i++) {
+            const p = particles[i];
+
+            if (config.stage >= 4.8) {
+                // S5 (Zanshin): The Eye Formation
+                // Swarm creates a dense pupil and iris
+                const radius = 3.5 + Math.sin(time + i * 0.1) * 0.2;
+
+                // Flatten into a disk/eye shape facing the camera roughly
+                // We map particles to a sphere but flatten Z
+                const theta = (i / particleCount) * Math.PI * 2 * 10; // Multiple spirals
+                const phi = (i / particleCount) * Math.PI;
+
+                const tx = Math.cos(theta + time * 0.2) * radius * Math.sin(phi);
+                const ty = Math.sin(theta + time * 0.2) * radius * Math.sin(phi);
+                const tz = Math.cos(phi) * 0.5; // Flattened Z
+
+                // Lerp to position (Heavy movement)
+                p.x += (tx - p.x) * 0.03;
+                p.y += (ty - p.y) * 0.03;
+                p.z += (tz - p.z) * 0.03;
+
+                // Unified rotation
+                dummy.rotation.set(0, 0, time + i * 0.01);
+
+            } else if (config.stage >= 4.0 && config.stage < 4.8) {
+                // S4 (Kyu): Explosion / Frenzy
+                // Particles explode outward and snap back
+                const explode = Math.sin(time * 20) > 0.8 ? 2 : 1; // Strobe expansion
+
+                p.vx += (Math.random() - 0.5) * config.chaos;
+                p.vy += (Math.random() - 0.5) * config.chaos;
+                p.vz += (Math.random() - 0.5) * config.chaos;
+
+                // Loose tether
+                p.vx -= p.x * 0.05;
+                p.vy -= p.y * 0.05;
+                p.vz -= p.z * 0.05;
+
+                p.x += p.vx * config.swarmSpeed;
+                p.y += p.vy * config.swarmSpeed;
+                p.z += p.vz * config.swarmSpeed;
+
+                dummy.rotation.set(Math.random()*Math.PI, Math.random()*Math.PI, Math.random()*Math.PI);
+
+            } else {
+                // S1-S3 (Jo, Ha, Ten): Orbiting & Distortion
+
+                // Base Orbit
+                const speed = config.swarmSpeed * (i % 2 === 0 ? 1 : -1);
+                const r = p.orbitRadius + (Math.sin(time * 2 + i) * config.chaos); // Chaos affects radius stability
+
+                // Calculate target orbit position
+                const tx = Math.cos(time * speed + p.phase) * r;
+                const ty = Math.sin(time * speed * 0.5 + p.phase) * r;
+                const tz = Math.sin(time * speed + p.phase) * (r * 0.5);
+
+                // Lerp towards orbit
+                p.x += (tx - p.x) * 0.1;
+                p.y += (ty - p.y) * 0.1;
+                p.z += (tz - p.z) * 0.1;
+
+                // Add glitch jumps in S3 (Ten)
+                if (config.stage >= 3 && config.stage < 4 && Math.random() > 0.99) {
+                    p.x += (Math.random() - 0.5) * 5;
+                    p.y += (Math.random() - 0.5) * 5;
+                }
+
+                dummy.rotation.set(time + i, time + i, 0);
+            }
+
+            dummy.position.set(p.x, p.y, p.z);
+
+            // Scale particles
+            const scale = config.stage >= 4.8 ? 1.0 : (1 + Math.sin(time * 5 + i) * 0.5);
+            dummy.scale.set(scale, scale, scale);
+
+            dummy.updateMatrix();
+            swarmMesh.setMatrixAt(i, dummy.matrix);
+        }
+        swarmMesh.instanceMatrix.needsUpdate = true;
+
+        // Host Animation (Shiver & Pulse)
+        if (config.stage > 2) {
+            const s = 1 + Math.sin(time * (10 * config.stage)) * 0.02 * (config.stage - 1);
+            hostMesh.scale.set(s, s, s);
+
+            // Random color strobe in S4
+            if (config.stage >= 4 && config.stage < 4.8 && Math.random() > 0.8) {
+                hostMaterial.color.setHex(Math.random() * 0xffffff);
+            } else if (config.stage < 4.8) {
+                hostMaterial.color.setHex(0x111111);
+            }
+        }
+
+        // Update Reflection
+        hostMesh.visible = false;
+        cubeCamera.position.copy(hostMesh.position);
+        cubeCamera.update(renderer, scene);
+        hostMesh.visible = true;
+
+        // Camera movement + Shake
+        camera.position.x += (mouseX * 10 - camera.position.x) * 0.05 + shakeX;
+        camera.position.y += (-mouseY * 10 - camera.position.y) * 0.05 + shakeY;
+        camera.position.z = initialCameraZ + shakeZ;
+        camera.lookAt(scene.position);
+
+        renderer.render(scene, camera);
+    }
+
+    // --- INTERACTION ---
+    let mouseX = 0;
+    let mouseY = 0;
+
+    document.addEventListener('mousemove', (event) => {
+        mouseX = (event.clientX / window.innerWidth) - 0.5;
+        mouseY = (event.clientY / window.innerHeight) - 0.5;
+    });
+
+    window.addEventListener('resize', () => {
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+    });
+
+    // Initialize S1 visual state
+    updateStageVisuals();
+
+    // Start
+    animate();
+
+</script>
+</body>
+</html>
